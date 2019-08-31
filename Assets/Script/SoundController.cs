@@ -29,7 +29,7 @@ public class SoundController : MonoBehaviour {
     }
     public void GetJewel()
     {
-        Debug.Log(audiosource);
+        
         audiosource.clip = Clip3;
         audiosource.Play();
     }

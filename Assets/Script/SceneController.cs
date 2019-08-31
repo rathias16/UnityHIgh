@@ -8,6 +8,11 @@ public class SceneController : MonoBehaviour {
 
     private SoundController sound;
 
+    void Start()
+    {
+        sound = GameObject.Find("sound").GetComponent<SoundController>();
+    }
+
     public void PushStartButton()
     {
        // sound.PushSelectButton();

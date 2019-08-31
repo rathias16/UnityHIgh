@@ -6,19 +6,26 @@ using UnityEngine.UI;
 public class ResultManager : MonoBehaviour {
     public GameObject[] ResultText;
 
-    public int score;
+    private int score;
 
-    private int[] Highscore = {0,0,0,0,0};
+    private int[] Highscore;
     
 	// Use this for initialization
 	void Start () {
         score = CharactorManager.jewelNum;
+        if (Highscore == null)
+        {
+            Highscore = new int[5];
+        }
 
         GetRanking();
-      
-	}
+    }
 	public void GetRanking()
     {
+        Debug.Log("HighScore.Length : " + Highscore.Length);
+
+        Load();
+
         for (int i = 0;i < Highscore.Length;i++)
         {
             if (Highscore[i] < score)
@@ -28,19 +35,37 @@ public class ResultManager : MonoBehaviour {
                 Highscore[i] = score;
                 score = _tmp;
             }
-            else
-            {
-                Highscore[0] = score;
-            }
-
+            
+            Debug.Log(i+":" + Highscore[i]);
         }
-        for(int i = 0;i < Highscore.Length; i++)
+        Save();
+    }
+    public void Ranking()
+    {
+        for (int i = 0; i < Highscore.Length; i++)
         {
-            ResultText[i].GetComponent<Text>().text = Highscore[i].ToString();
+            ResultText[i].GetComponent<Text>().text = (i+1) +":  "+ Highscore[i];
         }
     }
-	// Update is called once per frame
-	void Update () {
-		
+
+    public void Load()
+    {
+        for(int i = 0;i < Highscore.Length; i++)
+        {
+            string keyname = string.Format("score{0:D3}",i);
+            Highscore[i] = PlayerPrefs.GetInt(keyname);
+        }
+    }
+    public void Save()
+    {
+        for(int i = 0;i < Highscore.Length; i++)
+        {
+            string keyname = string.Format("score{0:D3}", i);
+            PlayerPrefs.SetInt(keyname,Highscore[i]);
+        }
+    }
+    // Update is called once per frame
+    void Update () {
+        Ranking();
 	}
 }
