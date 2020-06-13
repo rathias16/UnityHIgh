@@ -23,16 +23,16 @@ public class SettingManager : MonoBehaviour {
     {
         OptionPanel.gameObject.SetActive(false);
         RightPanel.gameObject.SetActive(true);
-        sound.PushSelectButton();
-    }
+        sound.PlaySEByname("kettei-01");
+	}
 
     public void PushCloseButton()
     {
         OptionPanel.gameObject.SetActive(true);
         RightPanel.gameObject.SetActive(false);
-        sound.PushCancelButton();
+        sound.PlaySEByname("cancel-01");
 
-    }
+	}
 
     // Update is called once per frame
     void Update () {
@@ -43,7 +43,7 @@ public class SettingManager : MonoBehaviour {
     {
         reverse = !reverse;
         CameraTextChange();
-        sound.PushSelectButton();
+        sound.PlaySEByname("kettei-01");
     }
     private void CameraTextChange()
     {

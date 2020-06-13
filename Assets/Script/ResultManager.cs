@@ -2,41 +2,67 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class ResultManager : MonoBehaviour {
-    public GameObject[] ResultText;
 
-    private int score;
+	[SerializeField]
+	private Transform Player;
+	public GameObject[] ResultText;
+	
+	private CharactorManager character;
 
-    private int[] Highscore;
+	Stage stage;
+
+	[SerializeField]
+	private GameObject field;
+
+
+	[SerializeField]
+	private GameObject Panel;
+
+    private float score;
+	SoundController sound;
+
+
+	private bool isPushButton;
+
+    private float[] Highscore;
     
 	// Use this for initialization
 	void Start () {
-        score = CharactorManager.jewelNum;
+		sound = GameObject.Find("sound").GetComponent<SoundController>();
+		stage = field.GetComponent<Stage>();
+        
         if (Highscore == null)
         {
-            Highscore = new int[5];
+            Highscore = new float[5];
         }
 
-        GetRanking();
-    }
+		character = Player.gameObject.GetComponent<CharactorManager>();
+		isPushButton = false;
+
+		StartCoroutine("Rank");
+
+		Debug.Log(character.Finished.GetType());
+	}
 	public void GetRanking()
     {
-        Debug.Log("HighScore.Length : " + Highscore.Length);
+		score = float.Parse(stage.timeText.GetComponent<Text>().text);
 
         Load();
 
         for (int i = 0;i < Highscore.Length;i++)
         {
-            if (Highscore[i] < score)
+            if (Highscore[i] > score)
             {
 
-                int _tmp = Highscore[i];
+                float _tmp = Highscore[i];
                 Highscore[i] = score;
                 score = _tmp;
             }
             
-            Debug.Log(i+":" + Highscore[i]);
+           // Debug.Log(i+":" + Highscore[i]);
         }
         Save();
     }
@@ -53,7 +79,7 @@ public class ResultManager : MonoBehaviour {
         for(int i = 0;i < Highscore.Length; i++)
         {
             string keyname = string.Format("score{0:D3}",i);
-            Highscore[i] = PlayerPrefs.GetInt(keyname);
+            Highscore[i] = PlayerPrefs.GetFloat(keyname);
         }
     }
     public void Save()
@@ -61,11 +87,43 @@ public class ResultManager : MonoBehaviour {
         for(int i = 0;i < Highscore.Length; i++)
         {
             string keyname = string.Format("score{0:D3}", i);
-            PlayerPrefs.SetInt(keyname,Highscore[i]);
+            PlayerPrefs.SetFloat(keyname,Highscore[i]);
         }
     }
-    // Update is called once per frame
-    void Update () {
-        Ranking();
+
+	IEnumerator Rank()
+	{
+		while (character.Finished == false)
+		{
+			yield return null;
+		}
+
+		Panel.SetActive(true);
+		GetRanking();
+		Ranking();
+		while (isPushButton == false)
+		{
+			yield return null;
+		}
+
 	}
+    // Update is called once per frame
+	void Update () {
+		
+		
+	}
+	public void PushExitButton()
+	{
+		isPushButton = true;
+		SceneManager.LoadScene("StartScene");
+		sound.StopBGM();
+
+	}
+	public void PushReplayButton()
+	{
+		isPushButton = true;
+		SceneManager.LoadScene("SearchScene2");
+		sound.StopBGM();
+	}
+	
 }

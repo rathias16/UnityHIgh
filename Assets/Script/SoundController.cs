@@ -4,38 +4,91 @@ using UnityEngine;
 
 public class SoundController : MonoBehaviour {
 
-    public  AudioSource audiosource;
-    public  AudioClip Clip1;
-    public AudioClip Clip2;
-    public  AudioClip Clip3;
-   
+	[SerializeField]
+	private Dictionary<string, int> SEDic = new Dictionary<string, int>();
+	private Dictionary<string, int> BGMDic = new Dictionary<string, int>();
+ 	AudioClip[] bgm;
+	AudioClip[] se;
+
+	AudioSource bgmSource;
+	AudioSource seSource;
 
 
-    // Use this for initialization
-    void Start()
-    {
-        audiosource = GetComponent<AudioSource>();
-        DontDestroyOnLoad(this);
-    }
-    public void PushSelectButton()
-    {
-        audiosource.clip = Clip1;
-        audiosource.Play();
-    }
-    public void PushCancelButton()
-    {
-        audiosource.clip = Clip2;
-        audiosource.Play();
-    }
-    public void GetJewel()
-    {
-        
-        audiosource.clip = Clip3;
-        audiosource.Play();
-    }
 
-    // Update is called once per frame
-    void Update () {
+
+
+	// Use this for initialization
+	void Awake()
+	{
+		DontDestroyOnLoad(this);
+		bgmSource = this.GetComponent<AudioSource>();
+		seSource = this.GetComponent<AudioSource>();
 		
+
+		bgm = Resources.LoadAll<AudioClip>("Audio/BGM");
+		se = Resources.LoadAll<AudioClip>("Audio/SE");
+
+		for (int i = 0;i < bgm.Length; i++)
+		{
+			BGMDic.Add(bgm[i].name,i);
+		}
+		for(int i = 0;i < se.Length;i++)
+		{
+			SEDic.Add(se[i].name,i);
+		}
+
 	}
+	public int GetBGMIndex(string name)
+	{
+		if (BGMDic.ContainsKey(name))
+			return BGMDic[name];
+		else
+		{
+			Debug.LogError("ファイルが存在しません");
+			return 0;
+		}
+	}
+	public int GetSEIndex(string name)
+	{
+		if (SEDic.ContainsKey(name))
+			return SEDic[name];
+		else
+		{
+			Debug.LogError("ファイルが見つかりません");
+			return 0;
+		}
+	}
+
+	public void PlayBGM(int index)
+	{
+		
+		index = Mathf.Clamp(index,0,bgm.Length);
+		bgmSource.clip = bgm[index];
+		bgmSource.Play();
+	}
+	public void PlayBGMByname(string name)
+	{
+		PlayBGM(GetBGMIndex(name));
+	}
+
+	public void StopBGM()
+	{
+		bgmSource.Stop();
+		bgmSource.clip = null;
+	}
+	public void PlaySE(int index)
+	{
+		index = Mathf.Clamp(index, 0, se.Length);
+		seSource.PlayOneShot(se[index]);
+	}
+	public void PlaySEByname(string name)
+	{
+		PlaySE(GetSEIndex(name));
+	}
+	public void StopSE()
+	{
+		seSource.Stop();
+		seSource.clip = null;
+	}
+	
 }
