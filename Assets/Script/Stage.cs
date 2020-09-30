@@ -30,7 +30,7 @@ public class Stage : MonoBehaviour {
 
 	private SoundController sound;
 
-	private float time;
+	public	float time;
 
 	//時間切れの時に表示する文字
 	[SerializeField]

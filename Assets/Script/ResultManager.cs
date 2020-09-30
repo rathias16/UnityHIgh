@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 public class ResultManager : MonoBehaviour {
 
 	[SerializeField]
 	private Transform Player;
 	public GameObject[] ResultText;
-	
 	private CharactorManager character;
-
 	Stage stage;
+
+	private string Path;
+	private ResultTestinfo resultdatainfo;
 
 	[SerializeField]
 	private GameObject field;
@@ -20,91 +22,100 @@ public class ResultManager : MonoBehaviour {
 
 	[SerializeField]
 	private GameObject Panel;
-
-    private float score;
+	
 	SoundController sound;
-
-
 	private bool isPushButton;
-
-    private float[] Highscore;
     
 	// Use this for initialization
 	void Start () {
 		sound = GameObject.Find("sound").GetComponent<SoundController>();
 		stage = field.GetComponent<Stage>();
-        
-        if (Highscore == null)
-        {
-            Highscore = new float[5];
-        }
 
+		resultdatainfo = new ResultTestinfo();
+		resultdatainfo.resluts = new ResultTest[5];
+		for (int i = 0; i < 5; i++)
+		{
+			resultdatainfo.resluts[i] = new ResultTest();
+		}
+		Path = Application.persistentDataPath + "/" + ".savedata.json";
 		character = Player.gameObject.GetComponent<CharactorManager>();
 		isPushButton = false;
 
 		StartCoroutine("Rank");
 
-		Debug.Log(character.Finished.GetType());
+		//Debug.Log(character.Finished.GetType());
 	}
-	public void GetRanking()
+	public void GetRanking(float score)
     {
-		score = float.Parse(stage.timeText.GetComponent<Text>().text);
-
-        Load();
-
-        for (int i = 0;i < Highscore.Length;i++)
-        {
-            if (Highscore[i] > score)
-            {
-
-                float _tmp = Highscore[i];
-                Highscore[i] = score;
-                score = _tmp;
-            }
-            
-           // Debug.Log(i+":" + Highscore[i]);
-        }
-        Save();
-    }
+		int tmprank = 7;
+		for (int i = 0; i < 5; i++)
+		{
+			//
+			if (resultdatainfo.resluts[i].time>score && tmprank>resultdatainfo.resluts[i].rank)
+			{
+				Debug.Log("!");
+				tmprank = i+1;
+			}
+		}
+		for (int i = 0; i < 5; i++)
+		{
+			if (resultdatainfo.resluts[i].rank >= tmprank) {
+				resultdatainfo.resluts[i].rank += 1;
+				if (resultdatainfo.resluts[i].rank > 5) {
+					resultdatainfo.resluts[i].rank = tmprank;
+					resultdatainfo.resluts[i].time = score;
+				}
+			}
+		}
+	}
     public void Ranking()
     {
-        for (int i = 0; i < Highscore.Length; i++)
-        {
-            ResultText[i].GetComponent<Text>().text = (i+1) +":  "+ Highscore[i];
-        }
-    }
+		for (int i = 0; i < 5; i++)
+		{
+			
+			if(resultdatainfo.resluts[i].rank < 6)
+				ResultText[resultdatainfo.resluts[i].rank - 1].GetComponent<Text>().text = resultdatainfo.resluts[i].time.ToString();
+		}
+	}
 
     public void Load()
     {
-        for(int i = 0;i < Highscore.Length; i++)
-        {
-            string keyname = string.Format("score{0:D3}",i);
-            Highscore[i] = PlayerPrefs.GetFloat(keyname);
-        }
+		if (File.Exists(Path))
+		{
+			ResultTest[] tmp;
+			string data = File.ReadAllText(Path);
+			Debug.Log(data);
+			tmp = JsonUtility.FromJson<ResultTest[]>(data);
+			for (int i = 0; i < tmp.Length; i++)
+			{
+				resultdatainfo.resluts[i] = tmp[i];
+			}
+		}
+		else
+		{
+			
+		}
+
     }
     public void Save()
     {
-        for(int i = 0;i < Highscore.Length; i++)
-        {
-            string keyname = string.Format("score{0:D3}", i);
-            PlayerPrefs.SetFloat(keyname,Highscore[i]);
-        }
+		string data = JsonUtility.ToJson(resultdatainfo);
+		Debug.Log(data);
+		File.WriteAllText(Path, data);
     }
-
+	//ゲーム終了時にランキングを更新して表示する
 	IEnumerator Rank()
 	{
 		while (character.Finished == false)
 		{
 			yield return null;
 		}
-
+		Load();
+		float score = stage.time;
 		Panel.SetActive(true);
-		GetRanking();
+		GetRanking(score);
 		Ranking();
-		while (isPushButton == false)
-		{
-			yield return null;
-		}
+		Save();
 
 	}
     // Update is called once per frame
